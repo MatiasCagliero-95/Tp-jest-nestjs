@@ -1,4 +1,4 @@
-import { Injectable} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { Product } from './entities/product.entity';
@@ -9,60 +9,75 @@ export class ProductService {
 
   private readonly products: Product[] = [];
 
-  findAll():Product[] {
-    return this.products;
+  findAll(): Promise<Product[]> {
+    return new Promise((resolve) => {
+        resolve(this.products);
+    });
+
   }
 
 
-  findOne(id: string): Product {
-    const product = this.products.find((p) => p.id === id);
-    if (!product) {
-      throw new Error("Not found");
-    }
-    return product;
+  async findOne(id: string): Promise<Product> {
+    return new Promise((resolve, reject) => {
+      const product = this.products.find((p) => p.id === id);
+
+      if (!product) {
+        //  reject es una función que se utiliza para rechazar una promesa con un motivo (un error).
+        reject(new Error("Not found"));
+      } else {
+        resolve(product);
+      }
+    });
   }
 
 
-
-  create(createProductDto: CreateProductDto): Product {
+  async create(createProductDto: CreateProductDto): Promise<Product> {
     try {
-      const newProduct: Product = {
-        ...createProductDto,
-        // crea un id aleatoria:
-        id: Math.random().toString(36).substring(7),
-      };
-      this.products.push(newProduct);
-      return newProduct;
+      return new Promise((resolve) => {
+        const newProduct: Product = {
+          ...createProductDto,
+          // crea un id aleatoria:
+          id: Math.random().toString(36).substring(7),
+        };
+        this.products.push(newProduct);
+        resolve(newProduct);
+      });
     } catch (error) {
-      throw new Error("Created failed");
+      throw new Error("Creation failed");
     }
   }
 
+  async update(id: string, updateProductDto: UpdateProductDto): Promise<Product> {
+    return new Promise((resolve, reject) => {
+      
+        const index = this.products.findIndex((p) => p.id === id);
+        if (index === -1) {
+          reject(new Error(`Product with ID ${id} not found`));
+          return ;
+        }
+        // Sobreescribe lo anterior en caso de que se repita:
+        const updatedProduct = { ...this.products[index], ...updateProductDto };
+        this.products[index] = updatedProduct;
 
-  update(id: string, updateProductDto: UpdateProductDto): Product {
-    const index = this.products.findIndex((p) => p.id === id);
-    if (index === -1) {
-      throw new Error(`Product with ID ${id} not found`);
-    }
-    // sobreescribe lo anterior en caso de que se repita:
-    const updatedProduct = { ...this.products[index], ...updateProductDto };
-
-    this.products[index] = updatedProduct;
-
-    return updatedProduct;
+        resolve(updatedProduct);
+    });
   }
 
-
-  remove(id: string): Product {
-    const index = this.products.findIndex((p) => p.id === id);
-    if (index === -1) {
-      throw new Error(`Product with ID ${id} not found`);
-    }
-
-    const deletedProduct = this.products[index];
-    this.products.splice(index, 1);
-
-    return deletedProduct;
+  async remove(id: string): Promise<Product> {
+    return new Promise((resolve, reject) => {
+      
+        const index = this.products.findIndex((p) => p.id === id);
+        if (index === -1) {
+          reject(new Error(`Product with ID ${id} not found`));
+          return;
+        }
+  
+        const deletedProduct = this.products[index];
+        this.products.splice(index, 1);
+  
+        resolve(deletedProduct);
+    });
   }
+
 }
 

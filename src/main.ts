@@ -4,7 +4,7 @@ import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-    // esta linea de codigo es como decir: cuando cree validaciones en multiples dto, siempre van a validar.
+  // esta linea de codigo es como decir: cuando cree validaciones en multiples dto, siempre van a validar.
   // es una clase que valida todo. 
   app.useGlobalPipes(new ValidationPipe({ whitelist: true,
     forbidNonWhitelisted: true,}));

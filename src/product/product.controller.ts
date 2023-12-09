@@ -10,9 +10,9 @@ export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
   @Get()
-  findAll():Product[]{
+  async findAll():Promise<Product[]> {
     try {
-      const serviceResponse: Product[] = this.productService.findAll();
+      const serviceResponse: Product[] = await this.productService.findAll();
       return serviceResponse;
     
     } catch (error) {
@@ -21,10 +21,11 @@ export class ProductController {
   }
 
 
+
   @Get("/:id")
-  findOne(@Param("id") id: string):Product {
+  async findOne(@Param("id") id: string):Promise<Product> {
     try {
-      const serviceResponse: Product = this.productService.findOne(id);
+      const serviceResponse: Product = await this.productService.findOne(id);
       return serviceResponse;
     } catch (error) {
       throw new NotFoundException("Not found")
@@ -36,10 +37,10 @@ export class ProductController {
   // habilita la transformacion del objeto al tipo del DTO antes de usarlo en la logica.
   @UsePipes(new ValidationPipe({ transform: true }))
 
-  create(@Body() createProductDto: CreateProductDto): Product {
+  async create(@Body() createProductDto: CreateProductDto):Promise<Product> {
 
     try {
-      const serviceResponse: Product = this.productService.create(createProductDto)
+      const serviceResponse: Product = await this.productService.create(createProductDto)
       return serviceResponse;
     } catch (error) {
       throw new BadRequestException("Creation failed")
@@ -51,10 +52,10 @@ export class ProductController {
   // habilita la transformacion del objeto al tipo del DTO antes de usarlo en la logica.
   @UsePipes(new ValidationPipe({ transform: true }))
 
-  update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto): Product {
+  async update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto): Promise<Product> {
 
     try {
-      const serviceResponse:Product = this.productService.update(id, updateProductDto);
+      const serviceResponse:Product = await this.productService.update(id, updateProductDto);
       return serviceResponse;
 
     } catch (error) {
@@ -64,9 +65,9 @@ export class ProductController {
 
 
   @Delete(":id")
-  remove(@Param('id') id: string): Product{
+  async remove(@Param('id') id: string): Promise<Product>{
     try {
-      const serviceResponse:Product = this.productService.remove(id);
+      const serviceResponse:Product = await this.productService.remove(id);
       return serviceResponse;
 
     } catch (error) {

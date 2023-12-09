@@ -2,9 +2,11 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ProductController } from './product.controller';
 import { ProductService } from './product.service';
 import { Product } from './entities/product.entity';
-import {BadRequestException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+
+
 
 describe('ProductController', () => {
   let controller: ProductController;
@@ -31,29 +33,36 @@ describe('ProductController', () => {
       expect(controller.findAll).toBeDefined();
     });
 
-     it("should return an array of products successfully", () => {
+    it("should return an array of products successfully", async () => {
       const products: Product[] = [
-        {id: "1", name: "Product 1", description: "Description 1", price: 100},
-        {id: "2", name: "Product 2", description: "Description 2", price: 200},
+        { id: "1", name: "Product 1", description: "Description 1", price: 100 },
+        { id: "2", name: "Product 2", description: "Description 2", price: 200 },
       ];
 
-      jest.spyOn(service, "findAll").mockImplementation(() => products);
+      jest.spyOn(service, "findAll").mockImplementation(async () => products);
 
-      const result = controller.findAll();
+      const result = await controller.findAll();
 
       expect(result).toEqual(products);
-
     });
 
-    it("should throw NotFoundException if products not found", () => {
+    it('should return an empty array if productService.findAll returns empty', async () => {
+      jest.spyOn(service, 'findAll').mockImplementation(async () => []);
 
-      jest.spyOn(service, "findAll").mockImplementation(() => {
+      const result = await controller.findAll();
+
+      expect(result).toEqual([]);
+    });
+
+    it("should throw NotFoundException if products not found", async () => {
+
+      jest.spyOn(service, "findAll").mockImplementation(async () => {
         throw new Error("Not found");
       });
-      
-      expect(() => controller.findAll()).toThrow(new NotFoundException("Not found"));
-    });
 
+      // expect(....).rejects: La función rejects se utiliza para afirmar que la promesa devuelta por la expresión anterior (en este caso, controller.findAll()) será rechazada (con una excepción).
+      await expect(controller.findAll()).rejects.toThrow(new NotFoundException("Not found"));
+    });
 
   });
 
@@ -65,29 +74,28 @@ describe('ProductController', () => {
       expect(controller.findOne).toBeDefined();
     });
 
-    it("should return product when found", () => {
+    it("should return product when found", async () => {
       const productId = "1";
-      const product:Product = {id: "1", name: "Product 1", description: "Description 1", price: 100};
+      const product: Product = { id: "1", name: "Product 1", description: "Description 1", price: 100 };
 
-      jest.spyOn(service, "findOne").mockImplementation(() => product);
+      jest.spyOn(service, "findOne").mockImplementation(async () => product);
 
-      const result = controller.findOne(productId);
+      const result = await controller.findOne(productId);
 
       expect(result).toEqual(product);
     });
 
-    it("should throw NotFoundException if product not found", () => {
+    it("should throw NotFoundException if product not found", async () => {
 
       const productId = '1';
 
-      jest.spyOn(service, "findOne").mockImplementation(() => {
+      jest.spyOn(service, "findOne").mockImplementation(async () => {
         throw new Error("Not found");
       });
 
-      expect(() => controller.findOne(productId)).toThrow(new NotFoundException("Not found"));
+      await expect(controller.findOne(productId)).rejects.toThrow(new NotFoundException("Not found"));
     });
 
-    
   });
 
 
@@ -97,97 +105,98 @@ describe('ProductController', () => {
       expect(controller.create).toBeDefined();
     });
 
-    it("should create a product", () => {
-      const createProductDto: CreateProductDto = {name: "Product 1", description: "Description 1", price: 100};
+    it("should create a product", async () => {
+      const createProductDto: CreateProductDto = { name: "Product 1", description: "Description 1", price: 100 };
 
-      const product = {...createProductDto, id: "1"};
+      const product = { ...createProductDto, id: "1" };
 
-      jest.spyOn(service, "create").mockImplementation(() => product);
+      jest.spyOn(service, "create").mockImplementation(async () => product);
 
-      const result = controller.create(createProductDto);
+      const result = await controller.create(createProductDto);
 
       expect(result).toEqual(product);
     });
 
-    it("should throw BadRequestException on creation failure", () => {
-      const createProductDto: CreateProductDto = {name: "Product 1", description: "Description 1", price: 100};
 
-      jest.spyOn(service, "create").mockImplementation(() => {
+    it("should throw BadRequestException on creation failure", async () => {
+      const createProductDto: CreateProductDto = { name: "Product 1", description: "Description 1", price: 100 };
+
+      jest.spyOn(service, "create").mockImplementation(async () => {
         throw new Error("Created failed");
       });
 
-      expect(() => controller.create(createProductDto)).toThrow(BadRequestException);
+      await expect(controller.create(createProductDto)).rejects.toThrow(BadRequestException);
+
     });
   });
 
 
+    describe("update", () => {
 
-
-  describe("update", () => {
-
-    it("should be defined", () => {
-      expect(controller.update).toBeDefined();
-    });
-
-    it("should update a product", () => {
-      
-      const product: Product = {id: "1", name: "Product 1", description: "Description 1", price: 100};
-
-      const updateProductDto: UpdateProductDto = {description: "DescriptionUpdate"};
-      
-      const updateProductMock = {...product, ...updateProductDto };
-
-      jest.spyOn(service, "update").mockImplementation(() => updateProductMock);
-
-      const result = controller.update(product.id, updateProductDto);
-
-      expect(result).toEqual(updateProductMock);
-    });
-
-    it("should throw NotFoundException on update failure", () => {
-      const productId = "899";
-      const updateProductDto: UpdateProductDto = { name: "nameUpdate" };
-
-      jest.spyOn(service, "update").mockImplementation(() => {
-        throw new Error(`Product with ID ${productId} not found`);
+      it("should be defined", () => {
+        expect(controller.update).toBeDefined();
       });
 
-      expect(() => controller.update(productId, updateProductDto)).toThrow(NotFoundException);
+      it("should update a product", async () => {
+
+        const product: Product = { id: "1", name: "Product 1", description: "Description 1", price: 100 };
+
+        const updateProductDto: UpdateProductDto = { description: "DescriptionUpdate" };
+
+        const updateProductMock = { ...product, ...updateProductDto };
+
+        jest.spyOn(service, "update").mockImplementation(async () => updateProductMock);
+
+        const result = await controller.update(product.id, updateProductDto);
+
+        expect(result).toEqual(updateProductMock);
+      });
+
+      it("should throw NotFoundException on update failure", async () => {
+        const productId = "899";
+        const updateProductDto: UpdateProductDto = { name: "nameUpdate" };
+
+        jest.spyOn(service, "update").mockImplementation(async () => {
+          throw new Error(`Product with ID ${productId} not found`);
+        });
+
+        await expect(controller.update(productId, updateProductDto)).rejects.toThrow(new NotFoundException("Update failed"));
+      });
+
     });
 
-  });
+    describe("remove", () => {
 
-  describe("remove", () => {
+      it("should be defined", () => {
+        expect(controller.remove).toBeDefined();
+      });
 
-    it("should be defined", () => {
-      expect(controller.remove).toBeDefined();
-    });
-
-      it("should remove a product", () => {
+      it("should remove a product", async () => {
         const productId = "1";
-        const productMock = {id: "1", name: "Product 1", description: "Description 1", price: 100};
-  
-        jest.spyOn(service, "remove").mockImplementation(() => productMock);
-  
-        const result = controller.remove(productId);
-  
+        const productMock = { id: "1", name: "Product 1", description: "Description 1", price: 100 };
+
+        jest.spyOn(service, "remove").mockImplementation(async () => productMock);
+
+        const result = await controller.remove(productId);
+
         expect(result).toEqual(productMock);
       });
 
-      it("should throw NotFoundException on delete failure", () => {
+      it("should throw NotFoundException on delete failure", async () => {
         const productId = "1";
-  
-        jest.spyOn(service, "remove").mockImplementation(() => {
+
+        jest.spyOn(service, "remove").mockImplementation(async () => {
           throw new Error(`Product with ID ${productId} not found`);
         });
-  
-        expect(() => controller.remove(productId)).toThrow(NotFoundException);
+
+        await expect(controller.remove(productId)).rejects.toThrow(new NotFoundException("Delete failed"));
+
       });
+    });
+
+
+
   });
-
-
-
-});
 
 
 
