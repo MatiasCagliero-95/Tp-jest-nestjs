@@ -48,7 +48,7 @@ export class ProductController {
       }
     }
   }
-
+ 
 
   @Patch(':id')
   // habilita la transformacion del objeto al tipo del DTO antes de usarlo en la logica.

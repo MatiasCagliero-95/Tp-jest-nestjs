@@ -22,5 +22,5 @@ export class CreateProductDto {
     @IsNumber()
     price: number;
 }
-
+ 
 

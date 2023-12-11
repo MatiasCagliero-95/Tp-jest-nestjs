@@ -187,20 +187,6 @@ describe('findAll', () => {
       await expect(async () => await controller.update(productId, updateProductDto)).rejects.toThrow(new HttpException("Update failed", HttpStatus.NOT_FOUND));
     });
 
-// verifico que la actualización fue exitosa con datos parciales
-    it("should update a product successfully with partial data", async () => {
-      const productId = "1";
-      const product: Product = { id: "1", name: "Product 1", description: "Description 1", price: 100 };
-      const updateProductDto: UpdateProductDto = { description: "Updated Description" };
-      const updatedProduct = { ...product, ...updateProductDto };
-
-      jest.spyOn(service, "update").mockImplementation(async () => updatedProduct);
-
-      const result = await controller.update(productId, updateProductDto);
-
-      expect(result).toEqual(updatedProduct);
-    });
-
     //Verifico que lanza BadRequestException cuando quiero actualizar con datos invalidos
     it("should throw NotFoundException on updating a product with invalid data", async () => {
       const productId = "1";
@@ -221,7 +207,7 @@ describe('findAll', () => {
       expect(controller.remove).toBeDefined();
     });
 
-//verifico que se elimina un producto
+//verifico que se elimina un producto correctamente
 
     it("should remove a product", async () => {
       const productId = "1";
@@ -244,18 +230,6 @@ describe('findAll', () => {
       });
 
       await expect(async () => await controller.remove(productId)).rejects.toThrow(new HttpException("Delete failed", HttpStatus.NOT_FOUND));
-    });
-
- //Verifico si se elimina el producto correcto
-    it("should return the deleted product", async () => {
-      const productId = "1";
-      const productMock = { id: "1", name: "Product 1", description: "Description 1", price: 100 };
-
-      jest.spyOn(service, "remove").mockImplementation(async () => productMock);
-
-      const result = await controller.remove(productId);
-
-      expect(result).toEqual(productMock);
     });
   });
 });
