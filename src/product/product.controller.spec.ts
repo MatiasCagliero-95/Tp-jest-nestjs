@@ -68,7 +68,7 @@ describe('findAll', () => {
 
   it('should throw NotFoundException if products not found', async () => {
     jest.spyOn(service, 'findAll').mockImplementation(async () => {
-      throw new HttpException('Not found', HttpStatus.NOT_FOUND);
+      throw new NotFoundException('Not found');
     });
 
     await expect(async () => controller.findAll()).rejects.toThrow(new HttpException('Not found', HttpStatus.NOT_FOUND));
@@ -99,7 +99,7 @@ describe('findAll', () => {
       const productId = '999';
 
       jest.spyOn(service, "findOne").mockImplementation(async () => {
-        throw new NotFoundException(`Product with ID ${productId} not found`);
+        throw new NotFoundException(`Not Found`);
       });
 
       await expect(async () => await controller.findOne(productId)).rejects.toThrow(new HttpException("Not found", HttpStatus.NOT_FOUND));
