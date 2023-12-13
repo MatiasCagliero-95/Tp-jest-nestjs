@@ -40,11 +40,11 @@ describe('findAll', () => {
       { id: '1', name: 'Product 1', description: 'Description 1', price: 100 },
       { id: '2', name: 'Product 2', description: 'Description 2', price: 200 },
     ];
-
+// simulo una llamada a FindAll() y le digo que me devuelva products
     jest.spyOn(service, 'findAll').mockImplementation(async () => products);
-
+//llamamos al controlador real y guardamos el resultado en result
     const result = await controller.findAll();
-
+//verificamos que el resultado de controller.findAll() sea igual a products
     expect(result).toEqual(products);
   });
 
@@ -174,14 +174,14 @@ describe('findAll', () => {
       expect(result).toEqual(updateProductMock);
     });
 
-//verifico que lanza NotFoundException cuando falla la actualizacion por que no se encuentra el id
+//verifico que lanza NotFoundException cuando debe
 
     it("should throw NotFoundException on update failure", async () => {
       const productId = "899";
       const updateProductDto: UpdateProductDto = { name: "nameUpdate" };
 
       jest.spyOn(service, "update").mockImplementation(async () => {
-        throw new Error(`Product with ID ${productId} not found`);
+       throw new NotFoundException("Update failed");
       });
 
       await expect(async () => await controller.update(productId, updateProductDto)).rejects.toThrow(new HttpException("Update failed", HttpStatus.NOT_FOUND));
@@ -226,7 +226,7 @@ describe('findAll', () => {
       const productId = "1";
 
       jest.spyOn(service, "remove").mockImplementation(async () => {
-        throw new Error(`Product with ID ${productId} not found`);
+        throw new NotFoundException("Delete failed")
       });
 
       await expect(async () => await controller.remove(productId)).rejects.toThrow(new HttpException("Delete failed", HttpStatus.NOT_FOUND));
