@@ -27,7 +27,7 @@ describe('ProductService', () => {
 
     it("should return an array of products", async () => {
       const result = await service.findAll();
-      expect(result).toBeInstanceOf(Array);
+      expect(Array.isArray(result)).toBe(true);
     });
 
   });
@@ -48,10 +48,9 @@ describe('ProductService', () => {
     it("should throw Error if product not found", async () => {
 
       try {
-        await service.findOne("id-that-does-not-exist");
+        await service.findOne("not-exist");
       } catch (error) {
         expect(error.message).toBe("Not found");
-        console.log(error.message);
       }
     });
   });
@@ -65,13 +64,19 @@ describe('ProductService', () => {
     it("should create a product and return it", async () => {
       const newProduct: CreateProductDto = { name: "newProduct", description: "Description 2", price: 200 }
       const result: Product = await service.create(newProduct);
-      //no me funciona:
-      // expect(result).toBeInstanceOf(Product);
-      expect(typeof result.id).toBe('string');
-      expect(result.name).toEqual(newProduct.name);
-      expect(result.description).toEqual(newProduct.description);
-      expect(result.price).toEqual(newProduct.price);
+      expect(result).toEqual({ ...newProduct, id: expect.any(String)});
     });
+    
+    
+
+    it("should product properti are a correct type", async () => {
+      const newProduct: CreateProductDto = { name: "newProduct", description: "Description 2", price: 200 }
+      const result: Product = await service.create(newProduct);
+      expect(typeof result.id).toBe('string');
+      expect(typeof result.name).toBe('string');
+      expect(typeof result.description).toBe('string');
+      expect(typeof result.price).toBe("number");
+    })
 
     it('should throw an error for an invalid product', async () => {
       const invalidProduct = {};
@@ -79,7 +84,6 @@ describe('ProductService', () => {
       try {
         await service.create(invalidProduct as any)
       } catch (error) {
-        console.log(error.message);
         expect(error.message).toBe("Creation failed");
       }
     });
@@ -103,7 +107,7 @@ describe('ProductService', () => {
     it("should return an error if it does not find the product", async () => {
       const updateProduct: UpdateProductDto = {name: "UpdateProduct"}
       try {
-        await service.update("id-that-does-not-exist",updateProduct)
+        await service.update("not-exist",updateProduct)
       } catch (error) {
         expect(error.message).toBe("Not found");
       }
@@ -126,11 +130,11 @@ describe('ProductService', () => {
     });
 
     it("should return an error if it does not find the product", async () => {
+      const invalidId = "Not-Exist"
       try {
-        await service.remove("id-that-does-not-exist")
+        await service.remove(invalidId)
       } catch (error) {
-        console.log(error.message);
-        expect(error.message).toBe("Not found");
+        expect(error.message).toBe(`Not found`);
       }
     });
   });
@@ -138,5 +142,3 @@ describe('ProductService', () => {
 
 
 });
-
- 
